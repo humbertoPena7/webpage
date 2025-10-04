@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Días Para Ver a Santi León</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1020; --accent:#6ee7b7; --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, #071024 0%, transparent 10%),
+                  radial-gradient(900px 500px at 90% 90%, #07102a 0%, transparent 10%),
+                  linear-gradient(180deg, #021026 0%, #041224 100%);
+      color: #e6eef8; padding:24px;
+    }
+    .card{
+      width:100%; max-width:820px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:16px; padding:28px; box-shadow: 0 10px 30px rgba(2,6,23,0.7); border:1px solid rgba(255,255,255,0.04);
+      display:grid; grid-template-columns: 1fr 380px; gap:20px; align-items:center;
+    }
+    header{grid-column:1/-1}
+    h1{margin:0 0 6px 0; font-size:1.6rem}
+    p.lead{margin:0;color:var(--muted)}
+
+    .countdown{
+      display:flex; gap:12px; justify-content:center; align-items:center; padding:18px; border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .unit{min-width:78px; text-align:center; padding:8px 10px}
+    .value{font-size:2.2rem; font-weight:700; letter-spacing: -0.02em;}
+    .label{font-size:0.78rem; color:var(--muted); margin-top:6px}
+
+    .right{
+      display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:center;
+    }
+    .target-card{background:var(--glass); padding:12px 14px; border-radius:10px; text-align:center}
+    .target-card time{display:block; font-weight:600}
+    .controls{display:flex; gap:8px; margin-top:8px}
+    button{background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit; padding:8px 12px; border-radius:8px; cursor:pointer}
+    button.secondary{border-style:dashed}
+    footer{grid-column:1/-1; text-align:center; margin-top:10px; color:var(--muted); font-size:0.9rem}
+
+    @media (max-width:820px){
+      .card{grid-template-columns:1fr;}
+      .countdown{flex-wrap:wrap}
+      .unit{min-width:64px}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <header>
+      <h1>Días para ver a <strong>Santi León</strong></h1>
+      
+    </header>
+
+    <section class="countdown" aria-live="polite">
+      <div class="unit">
+        <div id="dias" class="value">--</div>
+        <div class="label">Días</div>
+      </div>
+      <div class="unit">
+        <div id="horas" class="value">--</div>
+        <div class="label">Horas</div>
+      </div>
+      <div class="unit">
+        <div id="minutos" class="value">--</div>
+        <div class="label">Minutos</div>
+      </div>
+      <div class="unit">
+        <div id="segundos" class="value">--</div>
+        <div class="label">Segundos</div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="target-card" id="targetCard">
+        <div style="font-size:0.95rem;color:var(--muted)">Objetivo</div>
+        <time id="targetTime">8 de noviembre de 2025 — 00:00:00</time>
+        <div style="font-size:0.85rem;color:var(--muted)">Hora local</div>
+        <div class="controls">
+          <button id="changeBtn">Cambiar fecha</button>
+          <button id="copiarBtn" class="secondary">Copiar HTML</button>
+        </div>
+      </div>
+      <div style="font-size:0.85rem;color:var(--muted); text-align:center; padding:6px 10px">Cuando llegue a 0 se mostrará un mensaje de celebración.</div>
+    </aside>
+
+  </main>
+
+  <script>
+    // Objetivo: 8 de noviembre de 2025, 00:00:00 en hora local del navegador
+    let target = new Date(2025, 10, 8, 0, 0, 0); // mes: 0=enero -> 10 = noviembre
+
+    const diasEl = document.getElementById('dias');
+    const horasEl = document.getElementById('horas');
+    const minutosEl = document.getElementById('minutos');
+    const segundosEl = document.getElementById('segundos');
+    const targetTimeEl = document.getElementById('targetTime');
+    const targetCard = document.getElementById('targetCard');
+
+    function actualizarTargetText(){
+      const opts = { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
+      const localeStr = new Intl.DateTimeFormat(undefined, opts).format(target);
+      targetTimeEl.textContent = localeStr;
+    }
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function tick(){
+      const ahora = new Date();
+      let diff = Math.max(0, target - ahora);
+
+      const dias = Math.floor(diff / (1000*60*60*24));
+      diff -= dias * (1000*60*60*24);
+      const horas = Math.floor(diff / (1000*60*60));
+      diff -= horas * (1000*60*60);
+      const minutos = Math.floor(diff / (1000*60));
+      diff -= minutos * (1000*60);
+      const segundos = Math.floor(diff / 1000);
+
+      diasEl.textContent = dias;
+      horasEl.textContent = pad(horas);
+      minutosEl.textContent = pad(minutos);
+      segundosEl.textContent = pad(segundos);
+
+      if (target - ahora <= 0){
+        // final
+        targetCard.innerHTML = '<div style="font-weight:700;font-size:1.1rem">¡Llegó la fecha! 🎉</div><div style="color:var(--muted);margin-top:6px">¡Felicidades! Ya es 8 de noviembre.</div>';
+        clearInterval(timer);
+      }
+    }
+
+    actualizarTargetText();
+    tick();
+    const timer = setInterval(tick, 1000);
+
+    // Cambiar fecha (mínimo simple prompt)
+    document.getElementById('changeBtn').addEventListener('click', ()=>{
+      const entrada = prompt('Ingresa la fecha objetivo en formato YYYY-MM-DD HH:MM (hora local), por ejemplo: 2025-11-08 09:00', '2025-11-08 00:00');
+      if (!entrada) return;
+      const partes = entrada.split(' ');
+      const dateParts = partes[0].split('-').map(x=>parseInt(x,10));
+      let timeParts = [0,0];
+      if (partes[1]) timeParts = partes[1].split(':').map(x=>parseInt(x,10));
+      if (dateParts.length===3){
+        // month index: dateParts[1]-1
+        target = new Date(dateParts[0], (dateParts[1]||1)-1, dateParts[2]||1, timeParts[0]||0, timeParts[1]||0, 0);
+        actualizarTargetText();
+        tick();
+      } else {
+        alert('Formato inválido. Usa YYYY-MM-DD HH:MM');
+      }
+    });
+
+    // Copiar HTML al portapapeles
+    document.getElementById('copiarBtn').addEventListener('click', async ()=>{
+      const html = '<!-- Guarda como countdown.html -->\n' + document.documentElement.outerHTML;
+      try{
+        await navigator.clipboard.writeText(html);
+        alert('HTML copiado al portapapeles.\nPega en un archivo y guarda como countdown.html');
+      }catch(e){
+        alert('No se pudo copiar automáticamente. Puedes guardar manualmente el código fuente de la página.');
+      }
+    });
+
+  </script>
+</body>
+</html>
